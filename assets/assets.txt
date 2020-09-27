@@ -1,0 +1,7 @@
+rustacean-orig-noshadow-small.png: https://rustacean.net/, public domain
+
+bug.png: https://www.nextpng.com/en/transparent-png-ygusf, Non-commercial use
+
+FiraSans-Bold.ttf: https://github.com/bevyengine/bevy/blob/master/assets/fonts/FiraSans-Bold.ttf
+
+sfx_sounds_powerup6.wav: https://opengameart.org/content/512-sound-effects-8-bit-style, CC0 creative commons license
