@@ -334,7 +334,7 @@ fn text_display_system(state: Res<State>, mut query: Query<(&TextMsg, &mut Text,
 fn bug_collision_system(
     mut commands: Commands,
     mut state: ResMut<State>,
-    _audio_output: Res<AudioOutput>,
+    audio_output: Res<AudioOutput>,
     mut bug_query: Query<(Entity, &Bug, &Transform, &Sprite)>,
     mut collider_query: Query<(&Collider, &Transform, &Sprite)>,
     
@@ -354,7 +354,7 @@ fn bug_collision_system(
                 // scorable colliders should be despawned and increment the scoreboard on collision
                 match *collider {
                     Collider::Scorable => {
-                        // audio_output.play(state.bug_sound);
+                        audio_output.play(state.bug_sound);
                         state.score += 1;
                         commands.despawn(bug_entity);
                     },

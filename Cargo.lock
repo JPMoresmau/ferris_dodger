@@ -1604,6 +1604,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hound"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a164bb2ceaeff4f42542bdb847c41517c78a60f5649671b2a07312b6e117549"
+
+[[package]]
 name = "image"
 version = "0.23.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2456,6 +2462,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73bbf260262fd5501b7a17d6827e0d25c1127e921eb177150a060faf6e217a70"
 dependencies = [
  "cpal",
+ "hound",
  "lazy_static",
  "minimp3",
 ]
