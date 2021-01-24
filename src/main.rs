@@ -1,12 +1,13 @@
 use bevy::{ prelude::*,
     sprite::collide_aabb::{collide},};
+//use bevy::diagnostic::{FrameTimeDiagnosticsPlugin,PrintDiagnosticsPlugin};
 use rand::prelude::*;
 
-const SCREEN_WIDTH: u32 = 500;
-const SCREEN_HEIGHT: u32 = 500;
+const SCREEN_WIDTH: f32 = 500.0;
+const SCREEN_HEIGHT: f32 = 500.0;
 
-const FERRIS_WIDTH: u32 = 48;
-const FERRIS_HEIGHT: u32 = 32;
+const FERRIS_WIDTH: f32 = 48.0;
+const FERRIS_HEIGHT: f32 = 32.0;
 const WALL_THICKNESS: f32 = 10.0;
 
 const FERRIS_POSITION: f32 = (-(SCREEN_HEIGHT as f32)/2.0)+FERRIS_HEIGHT as f32;
@@ -27,8 +28,11 @@ fn main() {
             //mode: WindowMode::Fullscreen { use_size: false },
             ..Default::default()
         })
-        .add_default_plugins()
+        .add_plugins(DefaultPlugins)
         .add_plugin(DodgerPlugin)
+        //.add_plugin(PrintDiagnosticsPlugin::default())                                                                                                                                                                                                                    
+        //.add_plugin(FrameTimeDiagnosticsPlugin::default())                                                                                                                                                                                                                                                                                                                                                                                                                                     
+        //.add_system(PrintDiagnosticsPlugin::print_diagnostics_system.system())    
         .run();
 }
 
@@ -96,19 +100,19 @@ enum TextMsg {
 
 
 fn setup(
-    mut commands: Commands,
+    commands: &mut Commands,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut state: ResMut<State>,
 ) {
-    let ferris_texture_handle = asset_server.load("assets/rustacean-orig-noshadow-small.png").unwrap();
-    let font = asset_server.load("assets/FiraSans-Bold.ttf").unwrap();
+    let ferris_texture_handle = asset_server.load("rustacean-orig-noshadow-small.png");
+    let font = asset_server.load("FiraSans-Bold.ttf");
     
     commands
-        .spawn(Camera2dComponents::default())
-        .spawn(UiCameraComponents::default())
+        .spawn(Camera2dBundle::default())
+        .spawn(CameraUiBundle::default())
         // scoreboard
-        .spawn(NodeComponents {
+        .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                 flex_direction: FlexDirection::ColumnReverse,
@@ -119,13 +123,14 @@ fn setup(
             ..Default::default()
         })
         .with_children(|parent| {
-            parent.spawn(TextComponents {
+            parent.spawn(TextBundle {
                 text: Text {
-                    font,
+                    font:font.clone(),
                     value: "Score:".to_string(),
                     style: TextStyle {
                         color: Color::WHITE,
                         font_size: 28.0,
+                        ..TextStyle::default()
                     },
                 },
                 style: Style {
@@ -135,7 +140,7 @@ fn setup(
                 ..Default::default()
             })
             .with(TextMsg::Score)
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(100.0), Val::Px(200.0)),
                     flex_direction: FlexDirection::Row,
@@ -147,13 +152,14 @@ fn setup(
             })
             .with_children(|parent| {
                 // death messages
-                parent.spawn(TextComponents {
+                parent.spawn(TextBundle {
                 text: Text {
                     font,
                     value: String::new(),
                     style: TextStyle {
                         color: Color::WHITE,
                         font_size: 28.0,
+                        ..TextStyle::default()
                     },
                 },
                 style: Style {
@@ -165,7 +171,7 @@ fn setup(
             .with(TextMsg::FinalScore);
         });
         })
-         .spawn(SpriteComponents {
+         .spawn(SpriteBundle {
             material: materials.add(ferris_texture_handle.into()),
             transform: Transform::from_translation(Vec3::new(0.0, FERRIS_POSITION, 0.0)),
             ..Default::default()
@@ -174,7 +180,7 @@ fn setup(
         .with(Collider::Death)
         ;
 
-    let bug_texture_handle =  materials.add(asset_server.load("assets/bug.png").unwrap().into());
+    let bug_texture_handle =  materials.add(asset_server.load("bug.png").into());
     state.bug_texture_handle=bug_texture_handle;
 
     // Add walls
@@ -184,39 +190,38 @@ fn setup(
 
     commands
         // left
-        .spawn(SpriteComponents {
-            material: wall_material,
-            transform: Transform::from_translation(Vec3::new(-bounds.x() / 2.0, 0.0, 0.0)),
-            sprite: Sprite::new(Vec2::new(WALL_THICKNESS, bounds.y() + WALL_THICKNESS)),
+        .spawn(SpriteBundle {
+            material: wall_material.clone(),
+            transform: Transform::from_translation(Vec3::new(-bounds.x / 2.0, 0.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(WALL_THICKNESS, bounds.y + WALL_THICKNESS)),
             ..Default::default()
         })
         // right
-        .spawn(SpriteComponents {
-            material: wall_material,
-            transform: Transform::from_translation(Vec3::new(bounds.x() / 2.0, 0.0, 0.0)),
-            sprite: Sprite::new(Vec2::new(WALL_THICKNESS, bounds.y() + WALL_THICKNESS)),
+        .spawn(SpriteBundle {
+            material: wall_material.clone(),
+            transform: Transform::from_translation(Vec3::new(bounds.x / 2.0, 0.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(WALL_THICKNESS, bounds.y + WALL_THICKNESS)),
             ..Default::default()
         })
         // bottom
-        .spawn(SpriteComponents {
-            material: wall_material,
-            transform: Transform::from_translation(Vec3::new(0.0, -bounds.y() / 2.0, 0.0)),
-            sprite: Sprite::new(Vec2::new(bounds.x() + WALL_THICKNESS, WALL_THICKNESS)),
+        .spawn(SpriteBundle {
+            material: wall_material.clone(),
+            transform: Transform::from_translation(Vec3::new(0.0, -bounds.y / 2.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(bounds.x + WALL_THICKNESS, WALL_THICKNESS)),
             ..Default::default()
         })
         .with(Collider::Scorable)
         // top
-        .spawn(SpriteComponents {
-            material: wall_material,
-            transform: Transform::from_translation(Vec3::new(0.0, bounds.y() / 2.0, 0.0)),
-            sprite: Sprite::new(Vec2::new(bounds.x() + WALL_THICKNESS, WALL_THICKNESS)),
+        .spawn(SpriteBundle {
+            material: wall_material.clone(),
+            transform: Transform::from_translation(Vec3::new(0.0, bounds.y / 2.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(bounds.x + WALL_THICKNESS, WALL_THICKNESS)),
             ..Default::default()
         })
         ;
 
         state.bug_sound = asset_server
-            .load("assets/sfx_sounds_powerup6.wav")
-            .unwrap();
+            .load("sfx_sounds_powerup6.wav");
            
 }
 
@@ -229,7 +234,7 @@ fn ferris_movement_system(
     if state.mode != Mode::Play {
         return;
     }
-    for (ferris, mut transform) in &mut query.iter() {
+    for (ferris, mut transform) in &mut query.iter_mut() {
         let mut direction = 0.0;
         if keyboard_input.pressed(KeyCode::Left) {
             direction -= 1.0;
@@ -239,18 +244,17 @@ fn ferris_movement_system(
             direction += 1.0;
         }
 
-        let translation = transform.translation_mut();
         // move the paddle horizontally
-        *translation.x_mut() += time.delta_seconds * direction * ferris.speed;
+        transform.translation.x += time.delta_seconds() * direction * ferris.speed;
         // bound the paddle within the walls
-        *translation.x_mut() = translation.x().min(FERRIS_MAX_POSITION).max(-FERRIS_MAX_POSITION);
+        transform.translation.x = transform.translation.x.min(FERRIS_MAX_POSITION).max(-FERRIS_MAX_POSITION);
     }
 }
 
-fn restart_system (mut commands: Commands,
+fn restart_system (commands: &mut Commands,
     keyboard_input: Res<Input<KeyCode>>,
     mut state: ResMut<State>,
-    mut bug_query: Query<(Entity, &Bug)>,
+    bug_query: Query<(Entity, &Bug)>,
     mut query: Query<(&Ferris, &mut Transform)>,) {
         if state.mode != Mode::Stop {
             return;
@@ -260,11 +264,10 @@ fn restart_system (mut commands: Commands,
             for (bug_entity, _bug) in &mut bug_query.iter() {
                 commands.despawn(bug_entity);
             }
-            for (_ferris, mut transform) in &mut query.iter() {
-                let translation = transform.translation_mut();
-                *translation.x_mut()=0.0;
+            for (_ferris, mut transform) in &mut query.iter_mut() {
+                transform.translation.x=0.0;
             }
-            state.timer.duration=2.0;
+            state.timer.set_duration(2.0);
             state.mode=Mode::Play;
         }
 }
@@ -276,34 +279,32 @@ fn bug_movement_system(time: Res<Time>,
             return;
         }
 
-    for (bug, mut transform) in &mut query.iter() {
-        
-        let translation = transform.translation_mut();
-        // move the paddle horizontally
-        *translation.y_mut() -= time.delta_seconds * bug.speed;
+    for (bug, mut transform) in &mut query.iter_mut() {
+       transform.translation.y -= time.delta_seconds() * bug.speed;
     }
 }
 
-fn bug_spawn_system(mut commands: Commands,
+fn bug_spawn_system(commands: &mut Commands,
     time: Res<Time>, mut state: ResMut<State>,){
     if state.mode != Mode::Play {
         return;
     }
     
-    state.timer.tick(time.delta_seconds);
+    state.timer.tick(time.delta_seconds());
 
     
-    if state.timer.finished {
+    if state.timer.finished() {
         let mut rng = thread_rng();
         let x:i32 = rng.gen_range(-5, 5)*BUG_WIDTH as i32 + BUG_WIDTH as i32/2;
 
         let speed = 40.0 + state.score as f32/1.5;
 
-        state.timer.duration *= 0.98;
+        let nd = state.timer.duration() * 0.98;
+        state.timer.set_duration(nd);
 
         commands
-            .spawn(SpriteComponents {
-                material: state.bug_texture_handle,
+            .spawn(SpriteBundle {
+                material: state.bug_texture_handle.clone(),
                 transform: Transform::from_translation(Vec3::new(x as f32, BUG_POSITION, 0.0)),
                 ..Default::default()
             })
@@ -312,8 +313,8 @@ fn bug_spawn_system(mut commands: Commands,
     }
 }
 
-fn text_display_system(state: Res<State>, mut query: Query<(&TextMsg, &mut Text, &mut Draw)>) {
-    for (msg,mut text, mut draw) in &mut query.iter() {
+fn text_display_system(state: Res<State>, mut query: Query<(&TextMsg, &mut Text, &mut Style)>) {
+    for (msg,mut text, mut style) in &mut query.iter_mut() {
         match msg {
             TextMsg::Score => {
                 text.value = format!("Score: {}", state.score);
@@ -323,8 +324,12 @@ fn text_display_system(state: Res<State>, mut query: Query<(&TextMsg, &mut Text,
                     text.value = format!("You panic! Final score: {}\nPress <space> to restart!", state.score);
                 }
                 
-                draw.is_visible = state.mode == Mode::Stop;
-                
+                //draw.is_visible = state.mode == Mode::Stop;
+                if state.mode == Mode::Stop {
+                    style.display=Display::Flex;
+                } else {
+                    style.display=Display::None;
+                }
             },
         }
        
@@ -332,11 +337,11 @@ fn text_display_system(state: Res<State>, mut query: Query<(&TextMsg, &mut Text,
 }
 
 fn bug_collision_system(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut state: ResMut<State>,
-    audio_output: Res<AudioOutput>,
-    mut bug_query: Query<(Entity, &Bug, &Transform, &Sprite)>,
-    mut collider_query: Query<(&Collider, &Transform, &Sprite)>,
+    audio_output: Res<Audio>,
+    bug_query: Query<(Entity, &Bug, &Transform, &Sprite)>,
+    collider_query: Query<(&Collider, &Transform, &Sprite)>,
     
 ) {
     for (bug_entity, _bug, ball_transform, sprite) in &mut bug_query.iter() {
@@ -345,16 +350,16 @@ fn bug_collision_system(
         // check collision with walls
         for (collider, transform, sprite) in &mut collider_query.iter() {
             let collision = collide(
-                ball_transform.translation(),
+                ball_transform.translation,
                 ball_size,
-                transform.translation(),
+                transform.translation,
                 sprite.size,
             );
             if let Some(_collision) = collision {
                 // scorable colliders should be despawned and increment the scoreboard on collision
                 match *collider {
                     Collider::Scorable => {
-                        audio_output.play(state.bug_sound);
+                        audio_output.play(state.bug_sound.clone());
                         state.score += 1;
                         commands.despawn(bug_entity);
                     },
