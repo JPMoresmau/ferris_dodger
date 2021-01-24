@@ -1,6 +1,6 @@
 use bevy::{ prelude::*,
     sprite::collide_aabb::{collide},};
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin,PrintDiagnosticsPlugin};
+//use bevy::diagnostic::{FrameTimeDiagnosticsPlugin,PrintDiagnosticsPlugin};
 use rand::prelude::*;
 
 const SCREEN_WIDTH: f32 = 500.0;
@@ -30,9 +30,9 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(DodgerPlugin)
-        .add_plugin(PrintDiagnosticsPlugin::default())                                                                                                                                                                                                                    
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())                                                                                                                                                                                                                                                                                                                                                                                                                                     
-        .add_system(PrintDiagnosticsPlugin::print_diagnostics_system.system())    
+        //.add_plugin(PrintDiagnosticsPlugin::default())                                                                                                                                                                                                                    
+        //.add_plugin(FrameTimeDiagnosticsPlugin::default())                                                                                                                                                                                                                                                                                                                                                                                                                                     
+        //.add_system(PrintDiagnosticsPlugin::print_diagnostics_system.system())    
         .run();
 }
 
